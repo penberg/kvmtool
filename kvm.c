@@ -442,7 +442,10 @@ void kvm__pause(struct kvm *kvm)
 	if (pause_event < 0)
 		die("Failed creating pause notification event");
 	for (i = 0; i < kvm->nrcpus; i++)
-		pthread_kill(kvm->cpus[i]->thread, SIGKVMPAUSE);
+		if (kvm->cpus[i]->is_running)
+			pthread_kill(kvm->cpus[i]->thread, SIGKVMPAUSE);
+		else
+			paused_vcpus++;
 
 	while (paused_vcpus < kvm->nrcpus) {
 		u64 cur_read;
